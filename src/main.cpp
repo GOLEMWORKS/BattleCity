@@ -14,6 +14,11 @@ void glfwWindowSizeCallback(GLFWwindow* pWindow, int width, int height)
     glViewport(0, 0, g_windowSizeX, g_windowSizeY);
 }
 
+void glfwKeyCallback(GLFWwindow* pWindow, int key, int scancode, int action, int mode) 
+{
+    
+}
+
 int main(void)
 {
     /* Initialize the library */
@@ -48,7 +53,7 @@ int main(void)
     std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
     std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 
-    glClearColor(0,1,0,1);
+    glClearColor(1,1,0,1);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(pWindow))
