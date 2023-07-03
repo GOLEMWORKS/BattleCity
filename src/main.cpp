@@ -3,6 +3,41 @@
 
 #include <iostream>
 
+GLfloat point[] =
+{
+    0.0f,0.5f,0.0f,
+    0.5f,-0.5f,0.0f,
+    -0.5f,-0.5f,0.0f
+};
+
+GLfloat colors[] =
+{
+    1.0f,0.0f,0.0f,
+    0.0f,1.0f,0.0f,
+    0.0f,0.0f,1.0f
+};
+
+
+//Вертексный шейдер
+const char* vertex_shader =
+"#version 460\n"
+"layout(location = 0) in vec3 vertex_position;"
+"layout(location = 1) in vec3 vertex_color"
+"out vec3 color; "
+"void main() {"
+"   color = vertex_color;"
+"   gl_Position = vec4(vertex_position, 1.0);"
+"}";
+
+//Фрагментный шейдер
+const char* fragment_shader =
+"#version 460\n"
+"in vec3 color;"
+"out vec4 frag_color;"
+"void main() {"
+"   frag_color = vec4(color, 1.0);"
+"}";
+
 int g_windowSizeX = 640;
 int g_windowSizeY = 480;
 
@@ -56,16 +91,77 @@ int main(void)
         return -1;
     }
 
+    //Вывод в консоль информации отладки
     std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
     std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 
     glClearColor(1,1,0,1);
+
+    //& - адресс переменной
+    //Инициализапция вертексного шейдера
+    GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vs, 1, &vertex_shader, nullptr);
+    glCompileShader(vs);
+
+    //Инициализация фрагментного шейдера
+    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fs, 1, &fragment_shader, nullptr);
+    glCompileShader(fs);
+
+    //Линковка шейдеров
+    GLuint shader_program = glCreateProgram();
+    glAttachShader(shader_program, vs);
+    glAttachShader(shader_program, fs);
+    glLinkProgram(shader_program);
+
+    //После линковки шейдеры не нужны, поэтому они удаляются
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+
+    //Создание и подключение буффера
+    GLuint points_vbo = 0;
+    glGenBuffers(1, &points_vbo);
+
+    //Сделали буффер текущим
+    glBindBuffer(GL_ARRAY_BUFFER, points_vbo); 
+
+    //Заполняем буффер информацией. Выполняется для текущего буффера
+    // GL_STATIC_DRAW - подсказка для драйвера. Служит для отрисовки статичного объекта
+    // GL_DYNAMIC_DRAW - если данные об объекте будут частно меняться (перемещение, анимация и т.д.)
+    glBufferData(GL_ARRAY_BUFFER, sizeof(point), point, GL_STATIC_DRAW);
+
+    //Аналогичное подключение для массива цвета
+    GLuint colors_vbo = 0;
+    glGenBuffers(1, &colors_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+
+    //Создание Vertex Array Object для того, чтобы данные о шейдерах, загруженные в видеокарту правильно обрабатывались
+    GLuint vao = 0;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao); //Аналогично работе с vbo
+
+    //Связываем vbo & vao
+    glEnableVertexAttribArray(0); //Включение нулевой позиции в шейдере
+    glBindBuffer(GL_ARRAY_BUFFER, points_vbo); //Переключаемся на буфер с точками, делаем его текущим
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr); //Указываем позицию (0), количество цифр (3 т.к. их три в строке), формат данных, 
+    //нормировать ли входные данные, шаг смещения между данными, шаг смещения от начала массива
+
+    //Аналогично для цвета
+    glEnableVertexAttribArray(1); //Позиция уже пекрвая
+    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo); //Переключаемся на буфер с цветами, делаем его текущим
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr); //Команда выполняется только для текущего буффера
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(pWindow))
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
+
+        //Отрисовка треугольника
+        glUseProgram(shader_program);
+        glBindVertexArray(vao);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(pWindow);
