@@ -16,7 +16,10 @@ void glfwWindowSizeCallback(GLFWwindow* pWindow, int width, int height)
 
 void glfwKeyCallback(GLFWwindow* pWindow, int key, int scancode, int action, int mode) 
 {
-    
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    {
+        glfwSetWindowShouldClose(pWindow, GL_TRUE);
+    }
 }
 
 int main(void)
@@ -41,7 +44,10 @@ int main(void)
         return -1;
     }
 
+    //Регистрация callback функций
     glfwSetWindowSizeCallback(pWindow, glfwWindowSizeCallback);
+    glfwSetKeyCallback(pWindow, glfwKeyCallback);
+
     glfwMakeContextCurrent(pWindow);
 
     if(!gladLoadGL())
