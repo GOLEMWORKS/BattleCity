@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include "Renderer/ShaderProgram.h"
+
 GLfloat point[] =
 {
     0.0f,0.5f,0.0f,
@@ -95,27 +97,16 @@ int main(void)
 
     glClearColor(1,1,0,1);
 
-    //& - адресс переменной
-    //Инициализапция вертексного шейдера
-    GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, &vertex_shader, nullptr);
-    glCompileShader(vs);
+    std::string vertexShader(vertex_shader);
+    std::string fragmentShader(fragment_shader);
 
-    //Инициализация фрагментного шейдера
-    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, &fragment_shader, nullptr);
-    glCompileShader(fs);
-
-    //Линковка шейдеров
-    GLuint shader_program = glCreateProgram();
-    glAttachShader(shader_program, vs);
-    glAttachShader(shader_program, fs);
-    glLinkProgram(shader_program);
-
-    //После линковки шейдеры не нужны, поэтому они удаляются
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-
+    Renderer::ShaderProgram shaderProgram(vertexShader, fragmentShader);
+    if (!shaderProgram.isCompiled())
+    {
+        std::cerr << "Can't create shader program!" << std::endl;
+        return -1;
+    }
+    
     //Создание и подключение буффера
     GLuint points_vbo = 0;
     glGenBuffers(1, &points_vbo);
@@ -157,7 +148,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
 
         //Отрисовка треугольника
-        glUseProgram(shader_program);
+        shaderProgram.use();
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
