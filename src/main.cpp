@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "Renderer/ShaderProgram.h"
+#include "Resources/ResourceManager.h"
 
 GLfloat point[] =
 {
@@ -57,8 +58,10 @@ void glfwKeyCallback(GLFWwindow* pWindow, int key, int scancode, int action, int
     }
 }
 
-int main(void)
+int main(int arg, char** argv)
 {
+    ResourceManager resourceManager(argv[0]);
+
     /* Initialize the library */
     if (!glfwInit())
     {
