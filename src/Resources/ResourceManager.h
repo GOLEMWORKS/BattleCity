@@ -22,7 +22,7 @@ class ResourceManager {
 		std::shared_ptr<Renderer::ShaderProgram> getShader(const std::string& shaderName);
 
 	private:
-		std::string getFileString(const std::string& relativePath);
+		std::string getFileString(const std::string& relativeFilePath);
 
 		typedef std::map<const std::string, std::shared_ptr<Renderer::ShaderProgram>> ShaderProgramsMap;
 		ShaderProgramsMap m_shaderPrograms;
