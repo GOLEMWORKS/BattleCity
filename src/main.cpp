@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "Renderer/ShaderProgram.h"
+#include "Resources/ResourceManager.h"
 
 GLfloat point[] =
 {
@@ -19,24 +20,6 @@ GLfloat colors[] =
     0.0f,0.0f,1.0f
 };
 
-
-const char* vertex_shader =
-"#version 460\n"
-"layout(location = 0) in vec3 vertex_position;"
-"layout(location = 1) in vec3 vertex_color;"
-"out vec3 color;"
-"void main() {"
-"   color = vertex_color;"
-"   gl_Position = vec4(vertex_position, 1.0);"
-"}";
-
-const char* fragment_shader =
-"#version 460\n"
-"in vec3 color;"
-"out vec4 frag_color;"
-"void main() {"
-"   frag_color = vec4(color, 1.0);"
-"}";
 
 int g_windowSizeX = 640;
 int g_windowSizeY = 480;
@@ -57,7 +40,7 @@ void glfwKeyCallback(GLFWwindow* pWindow, int key, int scancode, int action, int
     }
 }
 
-int main(void)
+int main(int arg, char** argv)
 {
     /* Initialize the library */
     if (!glfwInit())
@@ -97,66 +80,66 @@ int main(void)
 
     glClearColor(1,1,0,1);
 
-    std::string vertexShader(vertex_shader);
-    std::string fragmentShader(fragment_shader);
-
-    Renderer::ShaderProgram shaderProgram(vertexShader, fragmentShader);
-    if (!shaderProgram.isCompiled())
     {
-        std::cerr << "Can't create shader program!" << std::endl;
-        return -1;
-    }
-    
-    //Создание и подключение буффера
-    GLuint points_vbo = 0;
-    glGenBuffers(1, &points_vbo);
+        ResourceManager resourceManager(argv[0]);
+        auto pDefaultShaderProgram = resourceManager.loadShaders("DefaultShaders", "res/shaders/vertex.txt", "res/shaders/fragment.txt");
+        if (!pDefaultShaderProgram)
+        {
+            std::cerr << "Can't create shader program: " << "DefaultShader" << std::endl;
+            return -1;
+        }
 
-    //Сделали буффер текущим
-    glBindBuffer(GL_ARRAY_BUFFER, points_vbo); 
+        //Создание и подключение буффера
+        GLuint points_vbo = 0;
+        glGenBuffers(1, &points_vbo);
 
-    //Заполняем буффер информацией. Выполняется для текущего буффера
-    // GL_STATIC_DRAW - подсказка для драйвера. Служит для отрисовки статичного объекта
-    // GL_DYNAMIC_DRAW - если данные об объекте будут частно меняться (перемещение, анимация и т.д.)
-    glBufferData(GL_ARRAY_BUFFER, sizeof(point), point, GL_STATIC_DRAW);
+        //Сделали буффер текущим
+        glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
 
-    //Аналогичное подключение для массива цвета
-    GLuint colors_vbo = 0;
-    glGenBuffers(1, &colors_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+        //Заполняем буффер информацией. Выполняется для текущего буффера
+        // GL_STATIC_DRAW - подсказка для драйвера. Служит для отрисовки статичного объекта
+        // GL_DYNAMIC_DRAW - если данные об объекте будут частно меняться (перемещение, анимация и т.д.)
+        glBufferData(GL_ARRAY_BUFFER, sizeof(point), point, GL_STATIC_DRAW);
 
-    //Создание Vertex Array Object для того, чтобы данные о шейдерах, загруженные в видеокарту правильно обрабатывались
-    GLuint vao = 0;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao); //Аналогично работе с vbo
+        //Аналогичное подключение для массива цвета
+        GLuint colors_vbo = 0;
+        glGenBuffers(1, &colors_vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
 
-    //Связываем vbo & vao
-    glEnableVertexAttribArray(0); //Включение нулевой позиции в шейдере
-    glBindBuffer(GL_ARRAY_BUFFER, points_vbo); //Переключаемся на буфер с точками, делаем его текущим
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr); //Указываем позицию (0), количество цифр (3 т.к. их три в строке), формат данных, 
-    //нормировать ли входные данные, шаг смещения между данными, шаг смещения от начала массива
+        //Создание Vertex Array Object для того, чтобы данные о шейдерах, загруженные в видеокарту правильно обрабатывались
+        GLuint vao = 0;
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao); //Аналогично работе с vbo
 
-    //Аналогично для цвета
-    glEnableVertexAttribArray(1); //Позиция уже пекрвая
-    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo); //Переключаемся на буфер с цветами, делаем его текущим
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr); //Команда выполняется только для текущего буффера
+        //Связываем vbo & vao
+        glEnableVertexAttribArray(0); //Включение нулевой позиции в шейдере
+        glBindBuffer(GL_ARRAY_BUFFER, points_vbo); //Переключаемся на буфер с точками, делаем его текущим
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr); //Указываем позицию (0), количество цифр (3 т.к. их три в строке), формат данных, 
+        //нормировать ли входные данные, шаг смещения между данными, шаг смещения от начала массива
 
-    /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(pWindow))
-    {
-        /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+        //Аналогично для цвета
+        glEnableVertexAttribArray(1); //Позиция уже пекрвая
+        glBindBuffer(GL_ARRAY_BUFFER, colors_vbo); //Переключаемся на буфер с цветами, делаем его текущим
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr); //Команда выполняется только для текущего буффера
 
-        //Отрисовка треугольника
-        shaderProgram.use();
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        /* Loop until the user closes the window */
+        while (!glfwWindowShouldClose(pWindow))
+        {
+            /* Render here */
+            glClear(GL_COLOR_BUFFER_BIT);
 
-        /* Swap front and back buffers */
-        glfwSwapBuffers(pWindow);
+            //Отрисовка треугольника
+            pDefaultShaderProgram->use();
+            glBindVertexArray(vao);
+            glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        /* Poll for and process events */
-        glfwPollEvents();
+            /* Swap front and back buffers */
+            glfwSwapBuffers(pWindow);
+
+            /* Poll for and process events */
+            glfwPollEvents();
+        }
     }
 
     glfwTerminate();
