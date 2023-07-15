@@ -5,6 +5,9 @@
 #include <fstream>
 #include <iostream>
 
+#define STB_MAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 ResourceManager::ResourceManager(const std::string& executablePath) 
 {
 	size_t found = executablePath.find_last_of("/\\");
@@ -68,4 +71,9 @@ std::shared_ptr<Renderer::ShaderProgram> ResourceManager::getShaderProgram(const
 
 	std::cerr << "Can't find shader program: " << shaderName << std::endl;
 	return nullptr;
+}
+
+void ResourceManager::loadTexture(const std::string& textureName, const std::string& texturePath)
+{
+
 }
