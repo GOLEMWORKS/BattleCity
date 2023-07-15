@@ -75,5 +75,5 @@ std::shared_ptr<Renderer::ShaderProgram> ResourceManager::getShaderProgram(const
 
 void ResourceManager::loadTexture(const std::string& textureName, const std::string& texturePath)
 {
-
+	int channels = 0;
 }
