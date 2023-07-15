@@ -89,6 +89,8 @@ int main(int arg, char** argv)
             return -1;
         }
 
+        resourceManager.loadTexture("DefaultTexture", "res/textures/map_16x16.png");
+
         //Создание и подключение буффера
         GLuint points_vbo = 0;
         glGenBuffers(1, &points_vbo);
