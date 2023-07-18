@@ -5,9 +5,9 @@ namespace Renderer {
 	Texture2D::Texture2D(const GLuint width,
 							GLuint height,
 							const unsigned char* data,
-							const unsigned int channels = 4,
-							const GLenum filter = GL_LINEAR,
-							const GLenum wrapMode = GL_CLAMP_TO_EDGE) 
+							const unsigned int channels,
+							const GLenum filter,
+							const GLenum wrapMode) 
 		:m_width(width)
 		,m_height(height)
 	{
