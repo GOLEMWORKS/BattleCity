@@ -120,7 +120,7 @@ int main(int arg, char** argv)
         GLuint texCords_vbo = 0;
         glGenBuffers(1, &texCords_vbo);
         glBindBuffer(GL_ARRAY_BUFFER, texCords_vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(texCord), texCord, GL_STATIC_DRAW);
 
         //Создание Vertex Array Object для того, чтобы данные о шейдерах, загруженные в видеокарту правильно обрабатывались
         GLuint vao = 0;
