@@ -15,6 +15,7 @@ namespace Renderer {
 			}
 
 			void use() const;
+			void setInt(const std::string& name, const GLint value);
 
 			ShaderProgram() = delete;
 			ShaderProgram(ShaderProgram&) = delete;
